@@ -66,97 +66,159 @@ class _HomePageState extends State<HomePage> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('Donors', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    height: 200,
-                    child: FutureBuilder<List<Donor>>(
-                      future: _donors,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
-                        } else if (snapshot.hasError) {
-                          return Center(child: Text('Error: \\${snapshot.error}'));
-                        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                          return const Center(child: Text('No donors found.'));
-                        } else {
-                          final donors = snapshot.data!;
-                          return ListView.builder(
-                            itemCount: donors.length,
-                            itemBuilder: (context, index) {
-                              final donor = donors[index];
-                              return ListTile(
-                                title: Text(donor.nome),
-                                subtitle: Text('Blood Type: \\${donor.tipoSanguineo}'),
-                              );
-                            },
-                          );
-                        }
-                      },
-                    ),
+              // Painel superior com cards/resumos
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                color: Colors.red.shade50,
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text('Resumo dos Doadores', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.red)),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        height: 80,
+                        child: FutureBuilder<List<Donor>>(
+                          future: _donors,
+                          builder: (context, snapshot) {
+                            final donors = snapshot.data ?? [];
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _InfoCard(
+                                  title: 'Total',
+                                  value: donors.length.toString(),
+                                  icon: Icons.bloodtype,
+                                  color: Colors.red,
+                                ),
+                                // Adicione mais cards se desejar
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.map),
-                    label: const Text('Visualizar Mapa de Doadores por Estado'),
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const DonorMapPage()),
-                      );
-                    },
-                  ),
-                ],
+                ),
               ),
               const SizedBox(height: 24),
-              const Text('Candidates by State', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              FutureBuilder<Map<String, int>>(
-                future: _candidatesByState,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: \\${snapshot.error}'));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('No data.'));
-                  } else {
-                    final data = snapshot.data!;
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: data.entries.map((e) => Text('State: \\${e.key} - Count: \\${e.value}')).toList(),
-                    );
-                  }
-                },
+              // Gráficos principais
+              Card(
+                elevation: 3,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text('Distribuição por Estado', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        height: 120,
+                        child: FutureBuilder<Map<String, int>>(
+                          future: _candidatesByState,
+                          builder: (context, snapshot) {
+                            if (!snapshot.hasData) {
+                              return const Center(child: CircularProgressIndicator());
+                            }
+                            final data = snapshot.data!;
+                            return ListView(
+                              scrollDirection: Axis.horizontal,
+                              children: data.entries.map((e) => _MiniStateCard(state: e.key, count: e.value)).toList(),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
               const SizedBox(height: 24),
-              const Text('Average BMI by Age Range', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              FutureBuilder<Map<String, double>>(
-                future: _bmiByAgeRange,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: \\${snapshot.error}'));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('No data.'));
-                  } else {
-                    final data = snapshot.data!;
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: data.entries.map((e) => Text('Age Range: \\${e.key} - Avg BMI: \\${e.value.toStringAsFixed(2)}')).toList(),
-                    );
-                  }
-                },
+              // Mapa centralizado e destacado
+              Card(
+                elevation: 5,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                child: SizedBox(
+                  height: 420,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: DonorMapPage(),
+                  ),
+                ),
               ),
+              const SizedBox(height: 24),
+              // Outras informações detalhadas (opcional)
               _buildMapSection<double>('Obesity Percentage by Gender', _obesityByGender, (e) => 'Gender: \\${e.key} - Obesity %: \\${e.value.toStringAsFixed(2)}'),
               _buildMapSection<double>('Average Age by Blood Type', _avgAgeByBloodType, (e) => 'Blood Type: \\${e.key} - Avg Age: \\${e.value.toStringAsFixed(2)}'),
               _buildMapSection<int>('Potential Donors by Recipient Type', _potentialDonorsByRecipient, (e) => 'Recipient: \\${e.key} - Donors: \\${e.value}'),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// Card informativo compacto
+class _InfoCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
+  const _InfoCard({required this.title, required this.value, required this.icon, required this.color, Key? key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: color.withOpacity(0.1),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        child: Row(
+          children: [
+            CircleAvatar(backgroundColor: color, child: Icon(icon, color: Colors.white)),
+            const SizedBox(width: 10),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontSize: 13, color: Colors.black54)),
+                Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Card compacto para estados
+class _MiniStateCard extends StatelessWidget {
+  final String state;
+  final int count;
+  const _MiniStateCard({required this.state, required this.count, Key? key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 90,
+      margin: const EdgeInsets.symmetric(horizontal: 6),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.red.shade100,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.red.shade200),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(state, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.red)),
+          const SizedBox(height: 8),
+          Text('$count', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        ],
       ),
     );
   }

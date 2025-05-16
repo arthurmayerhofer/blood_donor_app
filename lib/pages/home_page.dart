@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../models/donor.dart';
+import 'donor_map_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -68,32 +69,47 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text('Donors', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              SizedBox(
-                height: 200,
-                child: FutureBuilder<List<Donor>>(
-                  future: _donors,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text('Error: \\${snapshot.error}'));
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Center(child: Text('No donors found.'));
-                    } else {
-                      final donors = snapshot.data!;
-                      return ListView.builder(
-                        itemCount: donors.length,
-                        itemBuilder: (context, index) {
-                          final donor = donors[index];
-                          return ListTile(
-                            title: Text(donor.nome),
-                            subtitle: Text('Blood Type: \\${donor.tipoSanguineo}'),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: 200,
+                    child: FutureBuilder<List<Donor>>(
+                      future: _donors,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator());
+                        } else if (snapshot.hasError) {
+                          return Center(child: Text('Error: \\${snapshot.error}'));
+                        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return const Center(child: Text('No donors found.'));
+                        } else {
+                          final donors = snapshot.data!;
+                          return ListView.builder(
+                            itemCount: donors.length,
+                            itemBuilder: (context, index) {
+                              final donor = donors[index];
+                              return ListTile(
+                                title: Text(donor.nome),
+                                subtitle: Text('Blood Type: \\${donor.tipoSanguineo}'),
+                              );
+                            },
                           );
-                        },
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.map),
+                    label: const Text('Visualizar Mapa de Doadores por Estado'),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const DonorMapPage()),
                       );
-                    }
-                  },
-                ),
+                    },
+                  ),
+                ],
               ),
               const SizedBox(height: 24),
               const Text('Candidates by State', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),

@@ -5,26 +5,36 @@ import '../models/donor.dart';
 class ApiService {
   static const int _port = 8080;
 
+  // --- CONFIGURAÇÃO DE ENDEREÇO DA API ---
+  // Para rodar no emulador Android: mantenha '10.0.2.2'
+  // Para rodar no iOS Simulator: mantenha 'localhost'
+  // Para rodar no navegador (web): ajuste para o IP real da máquina se necessário
+  // Para rodar em dispositivo físico: DEFINA O IP DA SUA MÁQUINA NA REDE LOCAL ABAIXO
+  static const String userLocalNetworkIp = '192.168.0.10'; // <-- Edite aqui para seu IP local
+
   static String get _baseUrl {
     // Detecta ambiente web
     if (identical(0, 0.0)) {
       // Sempre use a URL real do backend para web
-      return 'http://localhost:8080/api/donors';
+      // return 'http://localhost:8080/api/donors';
       // Ou, se rodando em rede local (exemplo):
-      // return 'http://192.168.1.100:8080/api/donors';
+      return 'http://$userLocalNetworkIp:8080/api/donors';
     }
     // Android Emulator
     if (Platform.isAndroid) {
-      return 'http://10.0.2.2:$_port/api/donors';
+      // Para dispositivo físico Android, use o IP da sua máquina
+      return 'http://$userLocalNetworkIp:$_port/api/donors';
     }
     // iOS Simulator
     if (Platform.isIOS) {
-      return 'http://localhost:$_port/api/donors';
+      // Para dispositivo físico iOS, use o IP da sua máquina
+      return 'http://$userLocalNetworkIp:$_port/api/donors';
     }
     // Desktop/devices
+    // Para rodar em desktop (Windows, Mac, Linux), use o IP local se for necessário acessar de outro dispositivo,
+    // ou mantenha localhost se rodar tudo na mesma máquina.
+    // Exemplo para acesso externo: return 'http://$userLocalNetworkIp:$_port/api/donors';
     return 'http://localhost:$_port/api/donors';
-    // Para rodar em dispositivo físico, altere para o IP da sua máquina na rede local:
-    // return 'http://192.168.1.100:8080/api/donors';
   }
 
   final Dio _dio;

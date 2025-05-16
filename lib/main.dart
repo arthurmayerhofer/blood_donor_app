@@ -1,3 +1,4 @@
+import 'package:blood_donor_app/pages/donor_map_page.dart';
 import 'package:flutter/material.dart';
 import 'pages/home_page.dart';
 
@@ -16,7 +17,7 @@ class BloodDonorApp extends StatelessWidget {
         primarySwatch: Colors.red,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const HomePage(),
+      home: const DonorMapPage(),
       debugShowCheckedModeBanner: false,
     );
   }

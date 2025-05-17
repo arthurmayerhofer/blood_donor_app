@@ -351,42 +351,6 @@ class StateDetailModal extends StatelessWidget {
                               trailing: Text('${data['count'] ?? '-'}', style: const TextStyle(fontWeight: FontWeight.bold)),
                             ),
                           ),
-                          Card(
-                            elevation: 2,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            child: ListTile(
-                              leading: const Icon(Icons.monitor_weight, color: Colors.orange),
-                              title: const Text('Média de IMC por faixa etária'),
-                              subtitle: Text(_formatMap(data['bmi'])),
-                            ),
-                          ),
-                          Card(
-                            elevation: 2,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            child: ListTile(
-                              leading: const Icon(Icons.health_and_safety, color: Colors.blue),
-                              title: const Text('Obesidade por gênero'),
-                              subtitle: Text(_formatMap(data['obesity'])),
-                            ),
-                          ),
-                          Card(
-                            elevation: 2,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            child: ListTile(
-                              leading: const Icon(Icons.water_drop, color: Colors.purple),
-                              title: const Text('Idade média por tipo sanguíneo'),
-                              subtitle: Text(_formatMap(data['avgAge'])),
-                            ),
-                          ),
-                          Card(
-                            elevation: 2,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            child: ListTile(
-                              leading: const Icon(Icons.bloodtype, color: Colors.teal),
-                              title: const Text('Doadores potenciais por receptor'),
-                              subtitle: Text(_formatMap(data['potential'])),
-                            ),
-                          ),
                         ],
                       ),
                     ),

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../models/donor.dart';
 import 'donor_map_page.dart';
+import '../widgets/obesity_chart.dart';
+import '../widgets/age_by_bloodtype_chart.dart';
+import '../widgets/donors_by_recipient_table.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -70,74 +73,57 @@ class _HomePageState extends State<HomePage> {
             children: [
               // Painel superior com cards/resumos
               Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                color: Colors.red.shade50,
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const Text('Resumo dos Doadores', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.red)),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        height: 80,
-                        child: FutureBuilder<List<Donor>>(
-                          future: _donors,
-                          builder: (context, snapshot) {
-                            final donors = snapshot.data ?? [];
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                _InfoCard(
-                                  title: 'Total',
-                                  value: donors.length.toString(),
-                                  icon: Icons.bloodtype,
-                                  color: Colors.red,
-                                ),
-                                // Adicione mais cards se desejar
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-              ),
-              const SizedBox(height: 24),
-              // Gráficos principais
-              Card(
-                elevation: 3,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                color: Colors.white,
+                shadowColor: Colors.red.shade100,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Distribuição por Estado', style: TextStyle(fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 12),
-                      SizedBox(
-                        height: 120,
-                        child: FutureBuilder<Map<String, int>>(
-                          future: _candidatesByState,
-                          builder: (context, snapshot) {
-                            if (!snapshot.hasData) {
-                              return const Center(child: CircularProgressIndicator());
-                            }
-                            final data = snapshot.data!;
-                            return ListView(
-                              scrollDirection: Axis.horizontal,
-                              children: data.entries.map((e) => _MiniStateCard(state: e.key, count: e.value)).toList(),
-                            );
-                          },
-                        ),
+                      Row(
+                        children: const [
+                          Icon(Icons.bloodtype, color: Colors.red, size: 22),
+                          SizedBox(width: 8),
+                          Text(
+                            'Resumo dos Doadores',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      FutureBuilder<List<Donor>>(
+                        future: _donors,
+                        builder: (context, snapshot) {
+                          final donors = snapshot.data ?? [];
+                          return Wrap(
+                            spacing: 12,
+                            runSpacing: 12,
+                            children: [
+                              _InfoCard(
+                                title: 'Total',
+                                value: donors.length.toString(),
+                                icon: Icons.people,
+                                color: Colors.red,
+                              ),
+                              // Outros cards podem ser adicionados aqui, como por tipo sanguíneo, etc.
+                            ],
+                          );
+                        },
                       ),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 24),
+            
               // Mapa centralizado e destacado
               Card(
                 elevation: 5,
@@ -152,9 +138,48 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 24),
               // Outras informações detalhadas (opcional)
-              _buildMapSection<double>('Obesity Percentage by Gender', _obesityByGender, (e) => 'Gender: \\${e.key} - Obesity %: \\${e.value.toStringAsFixed(2)}'),
-              _buildMapSection<double>('Average Age by Blood Type', _avgAgeByBloodType, (e) => 'Blood Type: \\${e.key} - Avg Age: \\${e.value.toStringAsFixed(2)}'),
-              _buildMapSection<int>('Potential Donors by Recipient Type', _potentialDonorsByRecipient, (e) => 'Recipient: \\${e.key} - Donors: \\${e.value}'),
+              FutureBuilder<Map<String, double>>(
+                future: _obesityByGender,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Erro: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('Sem dados.'));
+                  } else {
+                    return ObesityChart(data: snapshot.data!);
+                  }
+                },
+              ),
+              FutureBuilder<Map<String, double>>(
+                future: _avgAgeByBloodType,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Erro: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('Sem dados.'));
+                  } else {
+                    return AgeByBloodTypeChart(data: snapshot.data!);
+                  }
+                },
+              ),
+              FutureBuilder<Map<String, int>>(
+                future: _potentialDonorsByRecipient,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Erro: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('Sem dados.'));
+                  } else {
+                    return DonorsByRecipientTable(data: snapshot.data!);
+                  }
+                },
+              ),
             ],
           ),
         ),

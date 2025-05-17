@@ -59,6 +59,16 @@ class ApiService {
     }
   }
 
+    // Fetch all donors by state
+  Future<List<Donor>> getDonorsByState() async {
+    try {
+      final response = await _dio.get('/by-state'); // Corrigido: string vazia para evitar barra extra
+      return (response.data as List).map((json) => Donor.fromJson(json)).toList();
+    } catch (e) {
+      throw Exception('Failed to fetch donors: $e');
+    }
+  }
+
   // Add a single donor
   Future<void> addDonor(Donor donor) async {
     try {
